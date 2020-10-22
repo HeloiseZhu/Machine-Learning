@@ -1,0 +1,304 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{blindtext}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,bm}
+\usepackage{amstext}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+\usepackage{setspace}
+
+
+\title{Introduction to Machine Learning\\Homework 2}
+\author{181860155 朱晓晴}
+
+\begin{document}
+    \maketitle
+	\numberwithin{equation}{section}
+	\section{[30pts] Multi-Label Logistic Regression}
+    In multi-label problem, each instance $\bm{x}$ has a label set $\bm{y}=\{y_1,y_2,...,y_L\}$ and each label $y_i\in\{0,1\}, \forall 1 \leq i \leq L$. Assume the post probability $p(\bm{y} \mid \bm{x})$ follows the conditional independence:\\
+    \begin{equation}
+    p(\bm{y} \mid \bm{x})=\prod\limits_{i=1}^L p(y_i \mid \bm{x}).
+    \end{equation}
+    Please use the logistic regression method to handle the following questions.\\
+    (1) [15pts] Please give the log-likelihood function of your logistic regression model;\\
+    (2) [15pts] Please calculate the gradient of your log-likelihood function and show the parameters updating step using gradient descent.\\
+
+解：
+(1)$\bm{x_i}$表示第$i$个示例，$\bm{y_i}$表示$\bm{x_i}$的标记集合，$y_{ij}$表示$\bm{y_i}$中的第$j$个标记。
+对数似然函数为
+\begin{spacing}{2.0}
+$\ell(\bm{w},b)=\sum\limits_{i=1}^m\text{ln}\; p(\bm{y}_i|\bm{x}_i;\bm{w},b)$
+
+$=\sum\limits_{i=1}^m \text{ln} \prod\limits_{j=1}^L p(y_{ij}|\bm{x}_i;\bm{w}_j,b_j)$
+
+$=\sum\limits_{i=1}^m\sum\limits_{j=1}^L \text{ln}\; p(y_{ij}|\bm{x}_i;\bm{w}_j,b_j)$
+\end{spacing}
+
+令$\bm{\beta}_j=(\bm{w}_j;b_j)$，$\bm{\hat{x}}_i=(\bm{x}_i;1)$，有
+\begin{spacing}{2.0}
+$\text{ln}\; p(y_{ij}|\bm{x}_i;\bm{w}_j,b_j)$
+
+$=\text{ln}[y_{ij}p_1(\bm{\hat{x}}_i;\bm{\beta}_j)+(1-y_{ij})p_0(\bm{\hat{x}}_i;\bm{\beta}_j)]$
+
+$=y_{ij}\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i-\text{ln}(1+e^{\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i})$
+\end{spacing}
+
+因此，
+
+$\ell(\bm{\beta})
+=\sum\limits_{i=1}^m\sum\limits_{j=1}^L[y_{ij}\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i-\text{ln}(1+e^{\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i})]$
+\\
+
+(2)梯度为
+\begin{spacing}{2.0}
+$\frac{\partial\ell(\bm{\beta})}{\partial\bm{\beta}_j}
+=\sum\limits_{i=1}^m(y_{ij}\bm{\hat{x}}_i-\frac{\bm{\hat{x}}_ie^{\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i}}{1+e^{\bm{\beta}_j^\mathrm{T}\bm{\hat{x}}_i}})$
+
+$\bigtriangledown\ell(\bm{\beta})=[\frac{\partial\ell(\bm{\beta})}{\partial\bm{\beta}_1},...,\frac{\partial\ell(\bm{\beta})}{\partial\bm{\beta}_L}]$
+\end{spacing}
+
+梯度下降法的更新公式为
+
+$\bm{\beta}^{t+1}=\bm{\beta}^{t}-\alpha^t\bigtriangledown\ell(\bm{\beta})$
+
+其中，$\alpha^t$为该步的学习率。
+
+
+
+
+
+
+\newpage
+\numberwithin{equation}{section}
+\section{[70pts] Logistic Regression from scratch  }
+Implementing algorithms is a good way of understanding how they work in-depth. In case that you are not familiar with the pipeline of building a machine learning model, this article can be an example (\href{https://www.jianshu.com/p/ecb89148ed64}{link}).
+
+In this experiment, you are asked to build a classification model on one of UCI data sets, Letter Recognition Data Set
+(\href{https://box.nju.edu.cn/f/0fdece85a4654d8b94c1/?dl=1}{click to download}). In particular, the objective is to identify each of a large number of black-and-white
+rectangular pixel displays as one of the 26 capital letters in the English alphabet. The detailed statistics of this data set is listed in Table~\ref{tab:dataset}. The data set was then randomly split into train set and test set with proportion $7:3$. Also, letters from `A' to `Z' are mapped to digits `1' to `26' respectively as represented in the last column of the provided data set.
+
+
+\begin{table}[!ht]
+    \centering
+    \caption{Statistics of the data set.}
+    \vspace{2mm}
+    \label{tab:dataset}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    Property & Value & Description\\
+    \hline
+        Number of Instances & 20,000 & Rows of the data set\\
+    \hline
+        Number of Features & 17 & Columns of the data set\\
+    \hline
+        Number of classes & 26 & Dimension of the target attribute \\
+    \hline
+    \end{tabular}
+\end{table}
+
+
+In order to build machine learning models, you are supposed to implement Logistic Regression (LR) algorithm which is commonly used in classification tasks. Specifically, in this experiment, you have to adapt the traditional binary class LR method to tackle the multi-class learning problem. 
+
+\begin{enumerate}
+    \item[(1)] [\textbf{10pts}] You are encouraged to implement the code using \emph{Python3} or \emph{Matlab}, implementations in any other programming language will not be graded. Please name the source code file (which contains the main function) as \emph{LR\underline{\hspace{0.5em}}main.py} (for python3) or \emph{LR\underline{\hspace{0.5em}}main.m} (for matlab). Finally, your code needs to print the testing performance on the provided test set once executed.
+
+    \item[(2)] [\textbf{30pts}] Functions required to implement:
+    \begin{itemize}
+        \item Implement LR algorithm using gradient descent or Newton's method.
+        \item Incorporate One-vs-Rest (OvR) strategy to tackle multi-class classification problem.
+    \end{itemize}
+    \item[(3)] [\textbf{30pts}] Explain implementation details in your submitted report (source code should not be included in your PDF report), including optimization details and hyper-parameter settings, etc. Also, testing performance with respect to Accuracy, Precision, Recall, and $F_1$ score should be reported following the form of Table 2.
+\end{enumerate}
+
+\begin{table}[h]
+    \centering
+     \caption{Performance of your implementation on test set.}
+     \vspace{2mm}
+    \label{tab:my_label}
+    \begin{tabular}{|c|c|}
+       \hline
+       Performance Metric & Value (\%) \\
+       \hline
+       accuracy & 00.00 \\
+       \hline
+       micro Precision  & 00.00\\
+       \hline
+       micro Recall & 00.00\\
+       \hline
+       micro $F_1$ & 00.00\\
+       \hline
+       macro Precision  & 00.00\\
+       \hline
+       macro Recall & 00.00\\
+       \hline
+       macro $F_1$ & 00.00\\
+       \hline
+    \end{tabular}
+
+\end{table}
+
+\textbf{NOTE:} Any off-the-shelf implementations of LR or optimization methods are \textbf{NOT ALLOWED} to use. When submitting your code and report, all files should be placed in the same directory (without any sub-directory).
+
+
+\newpage
+\section*{实验报告}
+\subsection*{1 算法介绍}
+\subsubsection*{1.1 总体思路}
+本次实验要求使用Logistic Regression算法实现分类模型，用于辨别26个大写字母。
+训练部分，首先处理训练集数据，再根据OvR策略构建26个分类器，并在每个分类器中进行学习。
+测试部分，首先处理测试集数据，然后在每个分类器中预测测试样例的分类。
+
+\subsubsection*{1.2 核心算法}
+核心算法为OvR策略和牛顿法。
+相较于梯度下降法，牛顿法收敛速度更快，且不存在“之”字形下降的问题，因此本次实验选择采用牛顿法进行优化。
+
+\textbf{OvR}
+
+OvR每次将一个字母所在类作为正例，其他25个字母作为反例，共训练26个分类器。
+预测时，考虑各分类器结果的预测置信度，选择置信度最大的类别标记作为分类结果。
+
+\textbf{牛顿法}
+
+选用的损失函数为
+\begin{equation*}
+    J(\bm{\beta})=-\frac{1}{m}\sum_{i=1}^{m}
+    (y_i\bm{\beta}^\mathrm{T}\bm{\hat{x}}_i
+    -\text{ln}(1+e^{\bm{\beta}^\mathrm{T}\bm{\hat{x}}_i}))
+\end{equation*}
+
+损失函数的梯度（一阶导数）为
+\begin{equation*}
+    \bigtriangledown J(\bm{\beta})
+    =\frac{1}{m}\sum_{i=1}^{m}\bm{\hat{x}}_i(p_1(\bm{\hat{x}}_i;\bm{\beta})-y_i)
+\end{equation*}
+
+Hessian矩阵（二阶导数）为
+\begin{equation*}
+    H=\frac{1}{m}\sum_{i=1}^{m}
+    \bm{\hat{x}}_i\bm{\hat{x}}_i^\mathrm{T}p_1(\bm{\hat{x}}_i;\bm{\beta})(1-p_1(\bm{\hat{x}}_i;\bm{\beta}))
+\end{equation*}
+
+牛顿法第$t+1$轮迭代解的更新公式为
+\begin{equation*}
+    \bm{\beta}^{t+1}=\bm{\beta}^{t}-H^{-1}\bigtriangledown J(\bm{\beta})
+\end{equation*}
+
+牛顿法的伪代码如下：
+
+1.$\bm{\beta}$初始为全零向量；
+
+2.计算梯度和Hessian矩阵，并计算出新的$\bm{\beta}$值；
+
+3.重复第2步（迭代）若干次。
+
+
+
+\subsection*{2 代码实现}
+\subsubsection*{2.1 语言}
+本次实验的代码部分使用Python 3完成，存放于LR\underline{  }main.py中。
+
+\subsubsection*{2.2 模块划分}
+代码实现中封装了LRClassifier类，成员变量的含义如下：
+
+trainSet：训练集数据
+
+dataMatrix：训练集特征数据（每个示例16个特征）
+
+label：训练集示例标记
+
+weights：26个分类器训练出的结果
+
+testSet：测试集数据
+
+testDataMatrix：测试集特征数据
+
+testResult：测试集示例标记
+\\
+
+成员函数的功能如下：
+
+normalize(testDataMat)：对testDataMat矩阵中的数据进行归一化处理。
+
+getDataSet()：读取训练集和测试集数据，分离示例特征和标记，并对示例特征进行归一化处理。
+
+OvR()：对每个分类器，计算出相应的训练集标记，并进行学习，得到的结果存放入weights中。
+
+newtonMethod(X, y, iteration)：X为训练集特征数据，y为分类器对应的训练集标记，iteration为指定迭代次数。
+该函数使用牛顿法得出某一分类器的结果。
+
+classify()：利用训练出的模型，对每个测试样例进行预测，最后给出分类模型的性能指标。
+
+
+
+
+\subsection*{3 实验结果}
+使用牛顿法进行优化时，需要调节的参数仅为迭代次数。
+迭代次数为5次时，模型的性能指标如下：
+
+\begin{table}[h]
+    \centering
+     \caption{模型性能指标（迭代5次）}
+     \vspace{2mm}
+    \label{tab:my_label}
+    \begin{tabular}{|c|c|}
+       \hline
+       Performance Metric & Value (\%) \\
+       \hline
+       accuracy & 69.97 \\
+       \hline
+       micro Precision  & 69.97\\
+       \hline
+       micro Recall & 69.97\\
+       \hline
+       micro $F_1$ & 69.97\\
+       \hline
+       macro Precision  & 70.56\\
+       \hline
+       macro Recall & 70.07\\
+       \hline
+       macro $F_1$ & 69.22\\
+       \hline
+    \end{tabular}
+\end{table}
+
+迭代次数为10次时，模型的性能指标如下：
+\begin{table}[h]
+    \centering
+     \caption{模型性能指标（迭代10次）}
+     \vspace{2mm}
+    \label{tab:my_label}
+    \begin{tabular}{|c|c|}
+       \hline
+       Performance Metric & Value (\%) \\
+       \hline
+       accuracy & 70.77 \\
+       \hline
+       micro Precision  & 70.77\\
+       \hline
+       micro Recall & 70.77\\
+       \hline
+       micro $F_1$ & 70.77\\
+       \hline
+       macro Precision  & 71.50\\
+       \hline
+       macro Recall & 70.85\\
+       \hline
+       macro $F_1$ & 70.27\\
+       \hline
+    \end{tabular}
+\end{table}
+
+当迭代次数达到10次以上时，上述性能指标没有显著提升。
+因此，本次实验选择的迭代次数为10次，性能指标如表4所示。
+\\\\\\
+
+\begin{thebibliography}{1}
+\bibitem{ref1} 周志华. 机器学习[M]. 清华大学出版社, 2016.
+\bibitem{ref2} 数据标准化/归一化\\\url{https://www.cnblogs.com/pejsidney/p/8031250.html}
+\bibitem{ref3} 牛顿法在逻辑回归中的使用\\\url{https://blog.csdn.net/m0_37393514/article/details/82708285}
+\bibitem{ref4} 多分类测评标准\\\url{https://www.cnblogs.com/wuxiangli/p/10478097.html}
+\end{thebibliography}
+
+\end{document}
