@@ -1,0 +1,311 @@
+\documentclass[a4paper,utf8]{article}
+\usepackage{ctex}
+\usepackage{blindtext}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,bm}
+\usepackage{amstext}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
+
+\title{Introduction to Machine Learning\\Homework 4}
+\author{181860155 朱晓晴\\\href{mailto:heloize@126.com}{heloize@126.com}}
+\date{2020年12月}
+
+\begin{document}
+	\maketitle
+	\numberwithin{equation}{section}
+	
+    \section{[30pts] SVM with Weighted Penalty}
+    Consider the standard SVM optimization problem as follows (i.e., formula (6.35)in book),
+    \begin{equation}
+    	\label{eq-svm}
+    	\begin{split}
+    		\min_{\mathbf{w},b,\xi_i}& \quad \frac{1}{2} \lVert \mathbf{w} \rVert^2 + C\sum_{i=1}^m\xi_i\\
+    		\text{s.t.}&  \quad y_i(\mathbf{w}^\mathrm{T}\mathbf{x}_i + b)\geq 1-\xi_i\\
+    		& \quad \xi_i \geq 0, i = 1,2,\dots,m.
+    	\end{split}
+    \end{equation}
+
+    Note that in \eqref{eq-svm}, for positive and negative examples, the "penalty" of the classification error in the objective function is the same. In the real scenario, the price of “punishment” is different for misclassifying positive and negative examples. For example, considering cancer diagnosis, misclassifying a person who actually has cancer as a healthy person, and misclassifying a healthy person as having cancer, the wrong influence and the cost should not be considered equivalent.
+
+    Now, we want to apply $k>0$ to the "penalty" of the examples that were split in the positive case for the examples with negative classification results (i.e., false positive). For such scenario,\\
+   (1) [15pts] Please give the corresponding SVM optimization problem;\\
+   (2) [15pts] Please give the corresponding dual problem and detailed derivation steps, especially such as KKT conditions.
+
+   \noindent
+   解：(1)定义如下两个集合：
+   \begin{align*}
+		& P\text{：正例的下标集合} \\
+		& N\text{：反例的下标集合}
+   \end{align*}                                                                      
+   SVM优化问题为：
+   \begin{equation}
+	%\label{eq-svm-wp}
+	\begin{split}
+		\min_{\bm{w},b,\xi_i}& \quad \frac{1}{2} \lVert \bm{w} \rVert^2 + C(\sum_{i\in P}^m\xi_i+k\sum_{i\in N}^m\xi_i)\\
+		\text{s.t.}&  \quad y_i(\bm{w}^\mathrm{T}\bm{x}_i + b)\geq 1-\xi_i\\
+		& \quad \xi_i \geq 0, i = 1,2,\dots,m.
+	\end{split}
+	\end{equation}
+
+	\noindent
+   (2)通过拉格朗日乘子法可得到式(1.2)的拉格朗日函数
+   \begin{equation}
+	\begin{split}
+		L(\bm{w},b,\bm{\alpha},\bm{\xi},\bm{\mu})=& \frac{1}{2}\lVert\bm{w}\rVert^2 + C(\sum_{i\in P}^m\xi_i+k\sum_{i\in N}^m\xi_i)\\
+		& +\sum_{i=1}^m\alpha_i(1-\xi_i-y_i(\bm{w}^\mathrm{T}\bm{x}_i+b)) - \sum_{i=1}^m\mu_i\xi_i
+	\end{split}
+	\end{equation}
+	其中$\alpha_i\geq 0$，$\mu_i\geq 0$是拉格朗日乘子。
+
+	令$L(\bm{w},b,\bm{\alpha},\bm{\xi},\bm{\mu})$对$\bm{w}$，$b$，$\xi_i$的偏导为零可得
+	\begin{equation}
+		\bm{w}=\sum_{i=1}^m \alpha_i y_i \bm{x}_i
+	\end{equation}
+	\begin{equation}
+		0=\sum_{i=1}^m \alpha_i y_i
+	\end{equation}
+	\begin{equation}
+		C(I(i\in P)+kI(i\in N))=\alpha_i+\mu_i
+	\end{equation}
+	其中，$I(\cdot)$为示性函数，其定义如下
+	\begin{equation*}
+		I(x)=
+		\begin{cases}
+			1 & x\text{为真} \\
+			0 & x\text{为假}
+		\end{cases}
+	\end{equation*}
+	将式(1.4)-(1.6)代入式(1.3)得到%即可得到相应的对偶问题
+	
+	\begin{equation}
+		\begin{split}
+			& L(\bm{w},b,\bm{\alpha},\bm{\xi},\bm{\mu}) \\
+			& =\frac{1}{2}\lVert\bm{w}\rVert^2
+			  +C(\sum_{i\in P}^m\xi_i+k\sum_{i\in N}^m\xi_i)
+			  +\sum_{i=1}^m\alpha_i(1-\xi_i-y_i(\bm{w}^\mathrm{T}\bm{x}_i+b))
+			  -\sum_{i=1}^m\mu_i\xi_i \\
+			& =\frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m \alpha_i\alpha_j y_iy_j\bm{x}_i^\mathrm{T}\bm{x}_j
+			  +C(\sum_{i\in P}^m\xi_i+k\sum_{i\in N}^m\xi_i) \\
+			& +\sum_{i=1}^m\alpha_i
+			  -\sum_{i=1}^m\alpha_i\xi_i
+			  -\sum_{i=1}^m\sum_{j=1}^m \alpha_i\alpha_j y_iy_j\bm{x}_i^\mathrm{T}\bm{x}_j
+			  -b\sum_{i=1}^m\alpha_i y_i
+			  -\sum_{i=1}^m\mu_i\xi_i \\
+			& =-\frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m \alpha_i\alpha_j y_iy_j\bm{x}_i^\mathrm{T}\bm{x}_j
+			  +\sum_{i\in P}^m(\alpha_i+\mu_i)\xi_i +k\sum_{i\in N}\frac{1}{k}(\alpha_i+\mu_i)\xi_i \\
+			& +\sum_{i=1}^m\alpha_i
+			  -\sum_{i=1}^m(\alpha_i+\mu_i)\xi_i \\
+			& =\sum_{i=1}^m\alpha_i
+			  -\frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m \alpha_i\alpha_j y_iy_j\bm{x}_i^\mathrm{T}\bm{x}_j
+		\end{split}
+	\end{equation}
+	KKT条件要求
+	\begin{align*}
+		\alpha_i\geq 0, \mu_i\geq 0
+	\end{align*}
+	从而有
+	\begin{align*}
+		0\leq\alpha_i\leq C(I(i\in P)+kI(i\in N))
+	\end{align*}
+	因此，相应的对偶问题为
+	\begin{equation}
+		\begin{split}
+			\max_{\bm{\alpha}}
+			& \quad \sum_{i=1}^m\alpha_i - \frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m \alpha_i\alpha_j y_iy_j\bm{x}_i^\mathrm{T}\bm{x}_j \\
+			\text{s.t.}
+			& \quad \sum_{i=1}^m \alpha_i y_j=0, \\
+			& \quad 0\leq\alpha_i\leq C(I(i\in P)+kI(i\in N)), i = 1,2,\dots,m.
+		\end{split}
+	\end{equation}
+	KKT条件为
+	\begin{equation}
+		\begin{cases}
+			\alpha_i\geq 0,\quad \mu_i\geq 0 \\
+			y_i(\bm{w}^\mathrm{T}\bm{x}_i+b)-1+\xi_i \geq 0 \\
+			\alpha_i[y_i(\bm{w}^\mathrm{T}\bm{x}_i+b)-1+\xi_i]=0 \\
+			\xi_i\geq 0,\quad \mu_i\xi_i=0
+		\end{cases}
+	\end{equation}
+
+
+
+
+
+
+	\newpage
+	\section{[35pts] Nearest Neighbor}
+	
+	Let $\mathcal{D} = \{\mathbf{x}_1, \dots, \mathbf{x}_n\}$ be a set of instances sampled completely at random from a $p$-dimensional unit ball $B$ centered at the origin, i.e.,
+	
+	\begin{equation}
+	B=\left\{\mathbf{x} :\|\mathbf{x}\|^{2} \leq 1\right\} \subset \mathbb{R}^{p}.
+	\end{equation}
+	Here, $||\mathbf{x}|| = \sqrt{\langle \mathbf{x}, \mathbf{x}\rangle}$ and $\langle \cdot \,, \cdot \rangle$ indicates the dot product of two vectors.
+		
+	In this assignment, we consider to find the nearest neighbor for the origin. That is, we define the shortest distance between the origin and $\mathcal{D}$ as follows,
+
+	\begin{equation}
+	d^{*} :=\min _{1 \leq i \leq n}\left\|\mathbf{x}_{i}\right\|.
+	\end{equation}
+		
+	It can be seen that $d^*$ is a random variable since $\mathbf{x}_i, \forall 1 \leq i \leq n$ are sampled completely at random.	
+	
+	\begin{enumerate}
+		\item [(1)] [10pts] Assume $ p = 3$ and $ t \in [0, 1]$, calculate Pr$(d^* \leq t)$, i.e., the cumulative distribution function (CDF) of random variable $d^*$.
+		\item [(2)] [15pts] Show the general formula of CDF of random variable $d^*$ for $p \in \{1, 2, 3, \dots \}$. You may need to use the volume formula of sphere with radius equals $r$,
+				\begin{equation}
+				V_{p}(r)=\frac{(r \sqrt{\pi})^{p}}{\Gamma(p / 2+1)}.
+				\end{equation}
+				Here, $\Gamma(1 / 2)=\sqrt{\pi}$, $\Gamma(1)=1$, and $\Gamma(x+1)=x \Gamma(x), \forall x > 0$. For $n \in \mathbb{N}^*$, $\Gamma(n+1)=n!$.
+		\item [(3)] [10pts] Calculate the median of the value of random variable $d^*$, i.e., calculate the value of $t$ that satisfies $\operatorname{Pr}\left(d^{*} \leq t\right)= \frac{1}{2}$.
+	\end{enumerate}
+	
+	\noindent
+	解：(1)对于任意一次随机取样，有
+	\begin{equation}
+		\text{Pr}(\left\|\mathbf{x}_{i}\right\|>t)
+		=1-\text{Pr}(\left\|\mathbf{x}_{i}\right\|\leq t)
+		=1-\frac{\frac{4}{3}\pi t^3}{\frac{4}{3}\pi 1^3}
+		=1-t^3
+	\end{equation}
+	因此，有
+	\begin{equation}
+		\begin{split}
+			\text{Pr}(d^*\leq t)
+			& =1-\text{Pr}(d^*>t) \\
+			& =1-\Pi_{i=1}^n\text{Pr}(\left\|\mathbf{x}_{i}\right\|>t) \\
+			& =1-(1-t^3)^n
+		\end{split}
+	\end{equation}
+
+	\noindent
+	(2)对于任意一次随机取样，有
+	\begin{equation}
+		\begin{split}
+			\text{Pr}(\left\|\mathbf{x}_{i}\right\|>t)
+			& =1-\text{Pr}(\left\|\mathbf{x}_{i}\right\|\leq t)\\
+			& =1-\frac{V_{p}(t)}{V_{p}(1)}\\
+			& =1-\frac{\frac{(t\sqrt{\pi})^{p}}{\Gamma(p/2+1)}.}
+									 {\frac{(\sqrt{\pi})^{p}}{\Gamma(p/2+1)}.}\\
+			& =1-t^p
+		\end{split}
+	\end{equation}
+	因此，有
+	\begin{equation}
+		\begin{split}
+			\text{Pr}(d^*\leq t)
+			& =1-\text{Pr}(d^*>t) \\
+			& =1-\Pi_{i=1}^n\text{Pr}(\left\|\mathbf{x}_{i}\right\|>t) \\
+			& =1-(1-t^p)^n
+		\end{split}
+	\end{equation}
+
+	\noindent
+	(3)根据题意，解出以下关于$t$的方程即可
+	\begin{equation}
+		\begin{split}
+			& \quad\quad \text{Pr}(d^*\leq t)=\frac{1}{2}\\
+			& \Leftrightarrow 1-(1-t^p)^n=\frac{1}{2}\\
+			& \Leftrightarrow 1-t^p=\sqrt[n]{\frac{1}{2}}\\
+			& \Leftrightarrow t=\sqrt[p]{1-\frac{1}{\sqrt[n]{2}}}
+		\end{split}
+	\end{equation}
+	因此，满足Pr$(d^*\leq t)=\frac{1}{2}$的
+	$t$的取值为$\sqrt[p]{1-\frac{1}{\sqrt[n]{2}}}$。
+
+
+
+
+	
+	\newpage
+	\section{[30pts] Principal Component Analysis }
+	\noindent
+	(1) [10 pts] Please describe describe the similarities and differences between PCA and LDA.\\
+	(2) [10 pts] Consider 3 data points in the 2-d space: (-2, 2), (0, 0), (2, 2), What is the first principal component? (Maybe you don't really need to solve any SVD or eigenproblem to see this.)\\
+	(3) [10 pts] If we projected the data into 1-d subspace, what are their new corrdinates?
+
+	\noindent
+	解：(1)
+	同：PCA和LDA都为线性降维算法；
+	就过程而言，PCA和LDA实际都是求某一矩阵的特征值，投影矩阵由特征值对应的特征向量构成。
+
+	\noindent
+	异：
+	PCA为无监督算法，LDA为有监督算法；
+	PCA假设方差越大，包含的信息越多，因此选择使得投影后的数据方差最大的方向作为主成分。
+	而LDA则选择使得投影后类内方差小、类间方差大的方向，能合理运用标签信息，使得投影后的维度具有判别性。
+
+	\noindent
+	(2)首先，对所有样本进行中心化，即令
+	\begin{equation}
+		\bm{x}_i\leftarrow \bm{x}_i-\frac{1}{3}\sum_{i=1}^3 \bm{x}_i
+	\end{equation}
+	得到以下三个数据点
+	\begin{equation*}
+		(-2,\frac{2}{3}),(0,-\frac{4}{3}),(2,\frac{2}{3})
+	\end{equation*}
+	计算样本的协方差矩阵
+	\begin{equation*}
+		X=\left[
+		\begin{matrix}
+			-2 & 0 & 2 \\
+			\frac{2}{3} & -\frac{4}{3} & \frac{2}{3} \\
+		\end{matrix}
+		\right],
+		XX^\mathrm{T}
+		=\left[
+		\begin{matrix}
+		\frac{8}{3} & 0 \\
+		0 & \frac{8}{9}
+		\end{matrix}
+		\right]
+	\end{equation*}
+	对协方差矩阵做特征值分解，得到以下特征值和相应的特征向量
+	\begin{align*}
+		& \lambda_1=\frac{8}{3},\quad 
+		\bm{w}_1=
+		\left[
+			\begin{matrix}
+			1 \\
+			0
+			\end{matrix}
+		\right]\\
+		& \lambda_2=\frac{8}{9},\quad
+		\bm{w}_2=
+		\left[
+			\begin{matrix}
+			0 \\
+			1
+			\end{matrix}
+		\right]
+	\end{align*}
+	因此，最大特征值$\frac{8}{3}$相应的特征向量
+	$\left[
+		\begin{matrix}
+		1 \\
+		0
+		\end{matrix}
+	\right]$
+	为第一主成分。
+
+	\noindent
+	(3)令
+	\begin{equation}
+		\bm{x}_i\leftarrow \bm{w}_1^\mathrm{T}\bm{x}_i
+	\end{equation}
+	得到$(-2,2),(0,0),(2,2)$的新坐标分别为-2，0，2。
+	
+
+	\newpage
+	\begin{thebibliography}{1}
+		\bibitem{ref1} 周志华. 机器学习[M]. 清华大学出版社, 2016.
+		\bibitem{ref2} PCA主成分分析\\
+					   \url{https://www.zhihu.com/question/41120789}
+		\bibitem{ref3} PCA与LDA的比较\\
+					   \url{https://www.jianshu.com/p/982c8f6760de}\\
+					   \url{https://www.zhihu.com/question/35666712}
+	\end{thebibliography}
+
+\end{document}
